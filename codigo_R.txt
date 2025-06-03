@@ -1,0 +1,51 @@
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+mtcars2 <- mtcars %>%
+  rownames_to_column(var = "model") %>%
+  mutate(cyl = factor(cyl))
+
+mtcars_long <- mtcars2 %>%
+  pivot_longer(
+    cols      = c(mpg, hp, wt),
+    names_to  = "variable",
+    values_to = "value"
+  )
+
+mtcars_filtrado <- mtcars_long %>%
+  filter(variable %in% c("mpg", "hp"))
+
+resumo <- mtcars_filtrado %>%
+  group_by(cyl, variable) %>%
+  summarise(
+    avg_value = mean(value),
+    .groups   = "drop"
+  )
+
+resumo_wide <- resumo %>%
+  pivot_wider(
+    names_from  = variable,
+    values_from = avg_value
+  )
+
+ggplot(resumo_wide, aes(x = hp, y = mpg, label = cyl)) +
+  geom_point(size = 3) +
+  geom_text(vjust = -0.5) +
+  labs(
+    title = "Média de HP vs MPG por Número de Cilindros",
+    x     = "HP Médio",
+    y     = "MPG Médio"
+  ) +
+  theme_minimal()
+
+ggplot(mtcars_long, aes(x = value, fill = cyl)) +
+  geom_density(alpha = 0.4) +
+  facet_wrap(~ variable, scales = "free") +
+  labs(
+    title = "Distribuição de mpg, hp e wt por Número de Cilindros",
+    x     = "Valor",
+    y     = "Densidade"
+  ) +
+  theme_light()
