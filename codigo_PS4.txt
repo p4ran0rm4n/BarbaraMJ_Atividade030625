@@ -1,0 +1,27 @@
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(lubridate)
+
+PS4 <- read.csv("PS4_GamesSales.csv")
+
+
+PS4_limpo <- PS4 %>%
+  filter(Genre == c("Action", "Sports")) %>%
+  filter(!is.na(Year))
+
+PS4_por_ano <- PS4_limpo %>%
+  group_by(Year, Genre) %>%
+  summarise(qtd = n(), .groups = "drop") %>%
+  filter(!is.na(Year))
+
+ggplot(PS4_por_ano, aes(x = Year, y = qtd, fill = Genre))+
+  geom_col(position = "dodge")+
+  labs(
+    title = "Comparação entre títulos de ação e esporte nos jogos da PS4",
+    x = "Ano",
+    y = "Quantidade de títulos",
+    fill = "Tipo"
+  )+
+  theme_minimal()
